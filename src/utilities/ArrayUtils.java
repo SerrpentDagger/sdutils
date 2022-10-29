@@ -11,6 +11,7 @@ import java.util.Scanner;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.util.function.Predicate;
 
 public class ArrayUtils
 {
@@ -612,6 +613,15 @@ public class ArrayUtils
 		}
 		return -1;
 	}
+	@SuppressWarnings("unchecked")
+	public static <T> T[] removeIf(T[] array, Predicate<T> remIf)
+	{
+		ArrayList<T> out = new ArrayList<>(array.length);
+		for (T t : array)
+			if (!remIf.test(t))
+				out.add(t);
+		return out.toArray((T[]) Array.newInstance(array.getClass().getComponentType(), out.size()));
+	}
 	public static <T> T[] trim(T[] array)
 	{
 		int trimF = 0, trimE = 0;
@@ -651,6 +661,72 @@ public class ArrayUtils
 				}
 				if (foundI == found.length - 1)
 					return true;
+			}
+		}
+		return false;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <A, B> B[] transform(A[] arr, Function<A, B> transformer, boolean keepNull)
+	{
+		ArrayList<B> B = new ArrayList<>(arr.length);
+		Class<B> clsB = null;
+		for (A a : arr)
+		{
+			if (a == null && !keepNull)
+				continue;
+			B b = transformer.apply(a);
+			if (b == null)
+			{
+				if (keepNull)
+					B.add(b);
+			}
+			else
+			{
+				B.add(b);
+				if (clsB == null)
+					clsB = (Class<B>) b.getClass();
+			}
+		}
+		if (clsB == null)
+			return null;
+		return B.toArray((B[]) Array.newInstance(clsB, B.size()));
+	}
+	public static <A, B> B[] transform(A[] arr, Function<A, B> transformer)
+	{
+		return transform(arr, transformer, false);
+	}
+	
+	public static <T> boolean forCombos(T[] arr, int r, Predicate<T[]> onEach)
+	{
+		int n = arr.length;
+		if (r > n)
+			return false;
+		@SuppressWarnings("unchecked")
+		T[] combo = (T[]) Array.newInstance(arr.getClass().getComponentType(), r);
+		int[] comboI = new int[combo.length];
+		for (int i = 0; i < combo.length; i++)
+		{
+			comboI[i] = i;
+			combo[i] = arr[i];
+		}
+		
+		while (comboI[r - 1] < n)
+		{
+			if (onEach.test(combo))
+				return true;
+			int t = r - 1;
+			while (t != 0 && comboI[t] == n - r + t)
+				t--;
+			comboI[t]++;
+			combo[t] = arr[comboI[t]];
+			for (int i = t + 1; i < r; i++)
+			{
+				comboI[i] = comboI[i - 1] + 1;
+				if (comboI[i] < arr.length)
+					combo[i] = arr[comboI[i]];
+				else
+					return false;
 			}
 		}
 		return false;
