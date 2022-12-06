@@ -1,12 +1,12 @@
 package utilities;
 
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 
 public class MultiCalc<T>
 {
-	private final HashMap<T, Double> counts = new HashMap<>();
+	private final LinkedHashMap<T, Double> counts = new LinkedHashMap<>();
 	
 	@Override
 	public String toString()
@@ -17,6 +17,11 @@ public class MultiCalc<T>
 	public void reset()
 	{
 		counts.clear();
+	}
+	
+	public int size()
+	{
+		return counts.size();
 	}
 	
 	public double get(T key)
@@ -175,6 +180,16 @@ public class MultiCalc<T>
 		}
 	}
 	
+	public void forEach(MCConsumer<T> forEach)
+	{
+		Iterator<Entry<T, Double>> it = counts.entrySet().iterator();
+		while (it.hasNext())
+		{
+			Entry<T, Double> ent = it.next();
+			forEach.accept(ent.getKey(), ent.getValue());
+		}
+	}
+	
 	/////////
 	
 	@FunctionalInterface
@@ -187,5 +202,11 @@ public class MultiCalc<T>
 	public static interface KeyCalc<T>
 	{
 		public double calc(T key, double current);
+	}
+	
+	@FunctionalInterface
+	public static interface MCConsumer<T>
+	{
+		public void accept(T key, double current);
 	}
 }

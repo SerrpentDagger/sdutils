@@ -732,6 +732,109 @@ public class ArrayUtils
 		return false;
 	}
 	
+	public static <T> T[] shift(T[] arr, int by)
+	{
+		if (by == 0)
+			return arr;
+		if (by > 0)
+		{
+			for (int i = arr.length - 1 - by; i >= 0; i--)
+			{
+				arr[i + by] = arr[i];
+				if (i < by)
+					arr[i] = null;
+			}
+		}
+		else
+		{
+			by = -by;
+			for (int i = by; i < arr.length; i++)
+			{
+				arr[i - by] = arr[i];
+				if (i >= arr.length - by);
+					arr[i] = null;
+			}
+		}
+		return arr;
+	}
+	
+/*	@SuppressWarnings("unchecked")
+	public static <SUB> Object cast(Object arr, Class<SUB> toOfType)
+	{
+		Class<?> arrType = arr.getClass();
+		if (!arrType.isArray())
+			throw new IllegalArgumentException("Array to cast must be an array.");
+		
+		Object out;
+		for (int d = 0; d < outTypes.length; d++)
+		{
+			
+		}
+	}*/
+	
+	@SuppressWarnings("unchecked")
+	public static <SUP, SUB extends SUP> SUB[] cast(SUP[] arr, Class<SUB> to)
+	{
+		SUB[] out = (SUB[]) Array.newInstance(to, arr.length);
+		for (int i = 0; i < out.length; i++)
+			out[i] = to.cast(arr[i]);
+		return out;
+	}
+	
+	public static <FROM, TO> Object castA(Object arr, Class<TO> toComponent, Function<FROM, TO> cast)
+	{
+		Class<?> arrType = arr.getClass();
+		ArrayList<Class<?>> arrTypes = new ArrayList<>(5);
+		Class<?> comp = arrType;
+		while (comp.isArray())
+		{
+			arrTypes.add(comp);
+			comp = comp.getComponentType();
+		}
+		arrTypes.add(comp);
+		
+		Class<?>[] outTypes = new Class<?>[arrTypes.size()];
+		Class<?> outType = toComponent;
+		for (int i = outTypes.length - 1; i >= 0; i--)
+		{
+			outTypes[i] = outType;
+			outType = outType.arrayType();
+		}
+
+		return cast(arr, arrTypes.toArray(new Class<?>[arrTypes.size()]), outTypes, 0, cast);
+	}
+	@SuppressWarnings("unchecked")
+	private static <FROM, TO> Object cast(Object arr, Class<?>[] arrTypes, Class<?>[] outTypes, int depth, Function<FROM, TO> cast)
+	{
+		if (depth < outTypes.length - 1)
+		{
+			int len = Array.getLength(arr);
+			Object out = Array.newInstance(outTypes[depth + 1], len);
+			for (int i = 0; i < len; i++)
+				Array.set(out, i, cast(Array.get(arr, i), arrTypes, outTypes, depth + 1, cast));
+			return out;
+		}
+		else
+			return cast.apply((FROM) arr);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <FROM, TO> TO[] cast(FROM[] arr, Class<TO> to, Function<FROM, TO> cast)
+	{
+		TO[] out = (TO[]) Array.newInstance(to, arr.length);
+		for (int i = 0; i < out.length; i++)
+			out[i] = cast.apply(arr[i]);
+		return out;
+	}
+	
+	public static float[] cast(double[] arr)
+	{
+		float[] out = new float[arr.length];
+		for (int i = 0; i < out.length; i++)
+			out[i] = (float) arr[i];
+		return out;
+	}
+	
 	//////////////////////
 
 	public static class Ind
