@@ -1,3 +1,19 @@
+/**
+ * This file is part of SDUtils, which is a library of useful classes and functionality.
+ * Copyright (c) 2023, SerpentDagger (MRRH) <serpentdagger.contact@gmail.com>.
+ * 
+ * SDUtils is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either
+ * version 3 of the License, or (at your option) any later version.
+ * 
+ * SDUtils is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ * PURPOSE. See the GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License along with SDUtils.
+ * If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package utilities;
 
 import java.lang.reflect.Array;
@@ -12,6 +28,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
+import java.util.function.ToDoubleFunction;
 
 public class ArrayUtils
 {
@@ -832,6 +849,14 @@ public class ArrayUtils
 		float[] out = new float[arr.length];
 		for (int i = 0; i < out.length; i++)
 			out[i] = (float) arr[i];
+		return out;
+	}
+	
+	public static <T> double sum(T[] arr, ToDoubleFunction<T> valOf)
+	{
+		double out = 0;
+		for (T t : arr)
+			out += valOf.applyAsDouble(t);
 		return out;
 	}
 	
