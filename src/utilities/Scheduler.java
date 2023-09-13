@@ -42,7 +42,7 @@ public class Scheduler
 			{
 				t = it.next();
 				t.task.run();
-				if (t.runTick < tick)
+				if (t.runTick >= 0 && t.runTick < tick)
 					it.remove();
 			}
 		}
@@ -54,13 +54,25 @@ public class Scheduler
 			queue.poll().task.run();
 	}
 	
+	public boolean removeTask(Object key)
+	{
+		boolean any = false;
+		any = queue.removeIf((t) -> key.equals(t.key));
+		any = any || constant.removeIf((t) -> key.equals(t.key));
+		return any;
+	}
+	
 	public void scheduleTask(TickTask task)
 	{
+		if (task == null)
+			throw new IllegalArgumentException("Cannot schedule null task.");
 		queue.add(task);
 	}
 	
 	public void scheduleRepeated(TickTask task)
 	{
+		if (task == null)
+			throw new IllegalArgumentException("Cannot schedule null task.");
 		constant.add(task);
 	}
 	
@@ -90,6 +102,11 @@ public class Scheduler
 	public void scheduleRepeated(int duration, Runnable task)
 	{
 		scheduleRepeated(new TickTask(tick + duration, task));
+	}
+	
+	public boolean scheduleEndless(Object key, Runnable task)
+	{
+		return scheduleRefreshableRepeated(new TickTask(-1, key, task));
 	}
 	
 	public boolean scheduleRefreshableRepeated(int duration, Object key, Runnable task)
