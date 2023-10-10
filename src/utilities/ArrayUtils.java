@@ -25,8 +25,10 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.function.BiFunction;
+import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.util.function.IntUnaryOperator;
 import java.util.function.Predicate;
 import java.util.function.ToDoubleFunction;
 
@@ -176,6 +178,26 @@ public class ArrayUtils
 			searched += 2;
 		}
 		return found;
+	}
+	
+	public static void flip(int[] array)
+	{
+		for (int i = 0; i < array.length / 2; i++)
+		{
+			int a = array[i];
+			array[i] = array[array.length - 1 - i];
+			array[array.length - 1 - i] = a;
+		}
+	}
+	
+	public static <T> void flip(T[] array)
+	{
+		for (int i = 0; i < array.length / 2; i++)
+		{
+			T a = array[i];
+			array[i] = array[array.length - 1 - i];
+			array[array.length - 1 - i] = a;
+		}
 	}
 	
 	public static <T> void replace(T[] array, ArrayReplacer<T> replacer)
@@ -542,6 +564,28 @@ public class ArrayUtils
 		return (T[]) Array.newInstance(type.getClass().getComponentType(), length);
 	}
 	
+	public static int[] fill(int[] array, int start, int end, IntUnaryOperator indFill)
+	{
+		for (int i = start; i < end; i++)
+			array[i] = indFill.applyAsInt(i);
+		return array;
+	}
+	public static int[] fill(int[] array, IntUnaryOperator indFill)
+	{
+		return fill(array, 0, array.length, indFill);
+	}
+	
+	public static double[] fill(double[] array, int start, int end, DoubleUnaryOperator indFill)
+	{
+		for (int i = start; i < end; i++)
+			array[i] = indFill.applyAsDouble(i);
+		return array;
+	}
+	public static double[] fill(double[] array, DoubleUnaryOperator indFill)
+	{
+		return fill(array, 0, array.length, indFill);
+	}
+	
 	public static <T> T[] fill(T[] array, int start, int end, IntFunction<T> indFill)
 	{
 		for (int i = start; i < end; i++)
@@ -550,7 +594,7 @@ public class ArrayUtils
 	}
 	public static <T> T[] fill(T[] array, IntFunction<T> indFill)
 	{
-		return fill(array, 0, array.length - 1, indFill);
+		return fill(array, 0, array.length, indFill);
 	}
 	
 	public static <T> T[] extendPre(T[] array, int extension)
@@ -590,6 +634,18 @@ public class ArrayUtils
 		String out = pre;
 		for (int i = 0; i < array.length; i++)
 			out += printer.apply(array[i]) + (i == array.length - 1 ? "" : mid);
+		return out + post;
+	}
+	
+	public static String toString(int[] array, String pre, String mid, String post)
+	{
+		return toString(array, (i) -> "" + array[i], pre, mid, post);
+	}
+	public static String toString(int[] array, IntFunction<String> printer, String pre, String mid, String post)
+	{
+		String out = pre;
+		for (int i = 0; i < array.length; i++)
+			out += printer.apply(i) + (i == array.length - 1 ? "" : mid);
 		return out + post;
 	}
 	
@@ -844,11 +900,51 @@ public class ArrayUtils
 		return out;
 	}
 	
-	public static float[] cast(double[] arr)
+	public static float[] castF(double[] arr)
 	{
 		float[] out = new float[arr.length];
 		for (int i = 0; i < out.length; i++)
 			out[i] = (float) arr[i];
+		return out;
+	}
+	
+	public static float[] castF(int[] arr)
+	{
+		float[] out = new float[arr.length];
+		for (int i = 0; i < out.length; i++)
+			out[i] = arr[i];
+		return out;
+	}
+	
+	public static double[] castD(int[] arr)
+	{
+		double[] out = new double[arr.length];
+		for (int i = 0; i < out.length; i++)
+			out[i] = arr[i];
+		return out;
+	}
+	
+	public static double[] castD(float[] arr)
+	{
+		double[] out = new double[arr.length];
+		for (int i = 0; i < out.length; i++)
+			out[i] = arr[i];
+		return out;
+	}
+	
+	public static int[] castI(double[] arr)
+	{
+		int[] out = new int[arr.length];
+		for (int i = 0; i < out.length; i++)
+			out[i] = (int) arr[i];
+		return out;
+	}
+	
+	public static int[] castI(float[] arr)
+	{
+		int[] out = new int[arr.length];
+		for (int i = 0; i < out.length; i++)
+			out[i] = (int) arr[i];
 		return out;
 	}
 	
@@ -857,6 +953,62 @@ public class ArrayUtils
 		double out = 0;
 		for (T t : arr)
 			out += valOf.applyAsDouble(t);
+		return out;
+	}
+	
+	public static double computeOver(double[] vals, BiFunction<Double, Double, Double> op)
+	{
+		switch (vals.length)
+		{
+			case 0:
+				return 0;
+			case 1:
+				return vals[0];
+			default:
+				double v = op.apply(vals[0], vals[1]);
+				for (int i = 2; i < vals.length; i++)
+					v = op.apply(v, vals[i]);
+				return v;
+		}
+	}
+	
+	public static double computeOver(int[] vals, BiFunction<Integer, Integer, Integer> op)
+	{
+		switch (vals.length)
+		{
+			case 0:
+				return 0;
+			case 1:
+				return vals[0];
+			default:
+				int v = op.apply(vals[0], vals[1]);
+				for (int i = 2; i < vals.length; i++)
+					v = op.apply(v, vals[i]);
+				return v;
+		}
+	}
+	
+	public static double[] interlace(double[]... arrs)
+	{
+		int len = arrs[0].length;
+		for (int i = 1; i < arrs.length; i++)
+			if (arrs[i].length != len)
+				throw new IllegalArgumentException("Cannot interlace arrays of different lengths.");
+		double[] out = new double[len * arrs.length];
+		for (int i = 0; i < out.length; i++)
+			out[i] = arrs[i % arrs.length][i / arrs.length];
+		return out;
+	}
+
+	public static int[] interlace(int[]... arrs)
+	{
+		int len = arrs[0].length;
+		for (int i = 1; i < arrs.length; i++)
+			if (arrs[i].length != len)
+				throw new IllegalArgumentException("Cannot interlace arrays of different lengths.");
+		int[] out = new int[len * arrs.length];
+		for (int i = 0; i < out.length; i++)
+			out[i] = arrs[i % arrs.length][i / arrs.length];
 		return out;
 	}
 	
@@ -883,67 +1035,6 @@ public class ArrayUtils
 		public void inc()
 		{
 			i++;
-		}
-	}
-	
-	public static class MultiIndex
-	{
-		private final int[] inds;
-		private int count;
-		private final int[] maxInds;
-		private boolean stop;
-		private final int last;
-		
-		public MultiIndex(int... maxInds)
-		{
-			inds = new int[maxInds.length];
-			this.maxInds = maxInds;
-			last = maxInds.length - 1;
-			count = 0;
-		}
-		
-		public void setMax(int i, int max)
-		{
-			maxInds[i] = max;
-		}
-		
-		public void inc()
-		{
-			inds[0] = (inds[0] + 1) % maxInds[0];
-			for (int i = 1; i < inds.length; i++)
-			{
-				if (inds[i - 1] == 0)
-				{
-					if (i == last && inds[last] == maxInds[last] - 1)
-						stop = true;
-					inds[i] = (inds[i] + 1) % maxInds[i];
-				}
-				else
-					break;
-			}
-			count++;
-		}
-		
-		public int get(int i)
-		{
-			return inds[i];
-		}
-		
-		public int getCount()
-		{
-			return count;
-		}
-		
-		public boolean stop()
-		{
-			return stop || last == -1;
-		}
-		
-		public void reset()
-		{
-			count = 0;
-			stop = false;
-			Arrays.fill(inds, 0);
 		}
 	}
 	
