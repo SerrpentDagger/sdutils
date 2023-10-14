@@ -1,3 +1,19 @@
+/**
+ * This file is part of SDUtils, which is a library of useful classes and functionality.
+ * Copyright (c) 2023, SerpentDagger (MRRH) <serpentdagger.contact@gmail.com>.
+ * 
+ * SDUtils is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either
+ * version 3 of the License, or (at your option) any later version.
+ * 
+ * SDUtils is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ * PURPOSE. See the GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License along with SDUtils.
+ * If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package utilities;
 
 import java.lang.reflect.Array;
@@ -51,6 +67,22 @@ public class MultiArray<T>
 		return array[mInd.count()];
 	}
 	
+	public MultiArray<T> set(T val, int... dind)
+	{
+		return set(val, lind(dind));
+	}
+	
+	public MultiArray<T> setL(T val, int lind)
+	{
+		array[lind] = val;
+		return this;
+	}
+	
+	public MultiArray<T> set(T val, MultiIndex mInd)
+	{
+		return setL(val, mInd.count());
+	}
+	
 	public int lind(int... dind)
 	{
 		if (dind.length != depth)
@@ -102,7 +134,7 @@ public class MultiArray<T>
 	
 	////////////////////
 	
-	public int depth()
+	public int dims()
 	{
 		return depth;
 	}
@@ -178,6 +210,16 @@ public class MultiArray<T>
 			return inds;
 		}
 		
+		public double ratio(int i, boolean attainMax)
+		{
+			return (double) inds[i] / (double) (attainMax ? maxInds[i] - 1 : maxInds[i]);
+		}
+		
+		public int dims()
+		{
+			return inds.length;
+		}
+		
 		public int depth()
 		{
 			return dMark;
@@ -204,6 +246,45 @@ public class MultiArray<T>
 			dMark = last;
 			stop = false;
 			Arrays.fill(inds, 0);
+		}
+	}
+	
+	public static class MultiSpan
+	{
+		private final double[] mins, spans;
+		private final MultiIndex ind;
+		
+		public MultiSpan(double[] mins, double[] maxes, int[] steps)
+		{
+			ind = new MultiIndex(steps);
+			if (mins.length != steps.length || maxes.length != steps.length)
+				throw new IllegalArgumentException("Mismatched lengths of mins/maxes/steps for MultiSpan.");
+			
+			this.mins = mins;
+			spans = ArrayUtils.generateD(mins.length, (i) -> maxes[i] - mins[i]);
+		}
+		
+		public MultiIndex getInd()
+		{
+			return ind;
+		}
+		
+		public double get(int dim)
+		{
+			return mins[dim] + (spans[dim] * ind.ratio(dim, true));
+		}
+		
+		public double[] get()
+		{
+			double[] out = new double[mins.length];
+			for (int i = 0; i < out.length; i++)
+				out[i] = get(i);
+			return out;
+		}
+		
+		public int dims()
+		{
+			return ind.dims();
 		}
 	}
 }

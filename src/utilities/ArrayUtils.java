@@ -25,12 +25,14 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.function.BiFunction;
-import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
+import java.util.function.IntConsumer;
 import java.util.function.IntFunction;
+import java.util.function.IntToDoubleFunction;
 import java.util.function.IntUnaryOperator;
 import java.util.function.Predicate;
 import java.util.function.ToDoubleFunction;
+import java.util.function.ToIntFunction;
 
 public class ArrayUtils
 {
@@ -564,6 +566,25 @@ public class ArrayUtils
 		return (T[]) Array.newInstance(type.getClass().getComponentType(), length);
 	}
 	
+	public static void iterate(int maxExcl, IntConsumer toDo)
+	{
+		for (int i = 0; i < maxExcl; i++) toDo.accept(i);
+	}
+	
+	public static int[] generateI(int len, IntUnaryOperator indFill)
+	{
+		int[] out = new int[len];
+		fill(out, indFill);
+		return out;
+	}
+	
+	public static double[] generateD(int len, IntToDoubleFunction indFill)
+	{
+		double[] out = new double[len];
+		fill(out, indFill);
+		return out;
+	}
+	
 	public static int[] fill(int[] array, int start, int end, IntUnaryOperator indFill)
 	{
 		for (int i = start; i < end; i++)
@@ -575,13 +596,13 @@ public class ArrayUtils
 		return fill(array, 0, array.length, indFill);
 	}
 	
-	public static double[] fill(double[] array, int start, int end, DoubleUnaryOperator indFill)
+	public static double[] fill(double[] array, int start, int end, IntToDoubleFunction indFill)
 	{
 		for (int i = start; i < end; i++)
 			array[i] = indFill.applyAsDouble(i);
 		return array;
 	}
-	public static double[] fill(double[] array, DoubleUnaryOperator indFill)
+	public static double[] fill(double[] array, IntToDoubleFunction indFill)
 	{
 		return fill(array, 0, array.length, indFill);
 	}
@@ -737,6 +758,22 @@ public class ArrayUtils
 			}
 		}
 		return false;
+	}
+	
+	public static <T> double[] transformD(T[] arr, ToDoubleFunction<T> transformer)
+	{
+		double[] out = new double[arr.length];
+		for (int i = 0; i < out.length; i++)
+			out[i] = transformer.applyAsDouble(arr[i]);
+		return out;
+	}
+	
+	public static <T> int[] transformI(T[] arr, ToIntFunction<T> transformer)
+	{
+		int[] out = new int[arr.length];
+		for (int i = 0; i < out.length; i++)
+			out[i] = transformer.applyAsInt(arr[i]);
+		return out;
 	}
 	
 	@SuppressWarnings("unchecked")
