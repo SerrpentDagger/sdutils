@@ -1,0 +1,33 @@
+plugins {
+	id 'java-library'
+	id 'maven-publish'
+}
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(25)
+	}
+}
+
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			// Dependencies automatically included in POM
+			from components.java
+		}
+	}
+}
+
+task sourcesJar(type: Jar) {
+	archiveClassifier = 'sources'
+	from sourceSets.main.allJava
+}
+
+task javadocJar(type: Jar) {
+	archiveClassifier = 'javadoc'
+	from javadoc
+}
+
+artifacts {
+	archives sourcesJar //, javadocJar no comments here.
+}
